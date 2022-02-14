@@ -1,0 +1,18 @@
+PREFIX : <http://purl.org/eis/vocab/scor#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+Prefix ns: <http://www.semanticweb.org/ramzy/ontologies/2021/3/untitled-ontology-6#>
+
+
+Select ?node ?tier ?MAX
+where{
+?node ns:belongsToTier ?tier.
+?node :hasAgilityMetric ?MAX. 
+{
+Select ?tier (MAX(?metric) as ?MAX) {
+?node :hasAgilityMetric ?metric. 
+?node ns:belongsToTier ?tier.
+bind (1 as ?x)
+} 
+Group by (?tier)
+}
+}

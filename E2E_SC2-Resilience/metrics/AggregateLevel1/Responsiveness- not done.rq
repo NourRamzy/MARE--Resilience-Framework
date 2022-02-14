@@ -1,0 +1,15 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX : <http://purl.org/eis/vocab/scor#>
+
+SELECT ?node (?source+?deliver+?deliveryretail+?make/count(?orders))  
+WHERE{
+?orders :belongsToNode ?node .
+?node  :hasMetricRS_23 ?deliver.
+?node :hasMetricRS_24 ?deliveryretail.
+?node :hasMetricRS_22 ?make.
+?node :hasMetricRS_21 ?source.
+}
+GROUP BY (?node)

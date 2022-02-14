@@ -1,0 +1,13 @@
+PREFIX    :   <http://purl.org/eis/vocab/scor#> 
+PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#> 
+
+SELECT ?node (sum(?totalCost) as ?hasMetricCO_21)
+WHERE{
+?process :belongsToNode ?node .
+?process :hasMetricCO_1 ?x .
+?process :hasMetricCO_2 ?y .
+?process :hasMetricCO_3 ?z .
+?process :hasMetricCO_4 ?w .
+BIND( xsd:integer(?x) + xsd:integer(?y) + xsd:integer(?z) + xsd:integer(?w) as ?totalCost)
+}
+GROUP BY (?node)

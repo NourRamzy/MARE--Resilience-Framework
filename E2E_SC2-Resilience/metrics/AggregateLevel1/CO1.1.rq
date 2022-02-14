@@ -1,0 +1,17 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX : <http://purl.org/eis/vocab/scor#>
+Prefix ns: <http://www.semanticweb.org/ramzy/ontologies/2021/3/untitled-ontology-6#>
+
+SELECT ?node (xsd:double(?x +?y + ?z +?w +?a) AS ?metric)
+WHERE{
+
+?node :hasMetricCO_21 ?x .
+?node :hasMetricCO_22 ?y .
+?node :hasMetricCO_23 ?z .
+?node :hasMetricCO_24 ?w .
+?node :hasMetricCO_25 ?a .
+}
+GROUP BY (?node)

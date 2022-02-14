@@ -1,0 +1,16 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX : <http://purl.org/eis/vocab/scor#>
+Prefix ns: <http://www.semanticweb.org/ramzy/ontologies/2021/3/untitled-ontology-6#>
+
+SELECT (xsd:double((?value1
+				   -?value3/)
+				   ?value2) AS ?metricResult)WHERE
+{
+?process :hasMetricAM_24 ?value1.
+?process :hasMetricAM_25 ?value2.
+?process :hasMetricCO_11 ?value3.
+
+}

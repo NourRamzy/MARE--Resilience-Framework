@@ -1,0 +1,17 @@
+PREFIX : <http://purl.org/eis/vocab/scor#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+Prefix ns: <http://www.semanticweb.org/ramzy/ontologies/2021/3/untitled-ontology-6#>
+SELECT ?x ?y ?full ?notfull ?node ((xsd:decimal(?full) / (xsd:decimal(?notFull)) * 100) as ?result)
+WHERE
+{
+{SELECT ((count(?deliveredInFull)) as ?full)
+WHERE {
+?deliveredInFull :hasMetricRL_33 ?x .
+?deliveredInFull :hasMetricRL_50 ?y .
+?deliveredinFull ns:belongsToNode ?node .
+}}
+{SELECT ((count(?allDeliveriesPerNode)) as ?notFull)
+WHERE { ?allDeliveriesPerNode a :Process .
+?allDeliveriesPerNode ns:belongsToNode ?node
+}}
+}
