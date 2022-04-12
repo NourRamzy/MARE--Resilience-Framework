@@ -54,7 +54,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.lang.Math;
 
 
-public class generator {
+public class Mare {
 	public static int time_big= 10; 
 	public static int frequency= 2; 
 	public static String strategy= "late";  
@@ -62,22 +62,14 @@ public class generator {
 	static String SOURCE = "http://www.semanticweb.org/ramzy/ontologies/2021/3/untitled-ontology-6";
     static String NS = SOURCE + "#";
     static String Scor= "http://purl.org/eis/vocab/scor#";
-    public static int S_Tiers; 
-    public static int C_Tiers;  
-    static ArrayList<Integer> supplier_tiers ;
-    static ArrayList<Integer> customer_tiers ;
     public static 	 HashMap<String, ArrayList<Integer>> hash_map ;
 	public static HashMap<String, ArrayList<Integer>> hash_map_customer ;
 	public static HashMap<String,ArrayList<String>> sc_uniques_final ;
 	
 	public static List<String> times; 
 	private static String Prefix;
-	private static  String scope= "location"; // location or transport
-	private static  String type= "partial"; //total or partial 
-	private static  String length= "long"; // short or long 
 	public static BufferedWriter out = null;
 	public static BufferedWriter out2 = null;
-	@SuppressWarnings("resource")
 	public static void main(String[] args) throws IOException {
 		times= new ArrayList<String>();
 		Prefix= "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\r\n" + 
@@ -88,18 +80,10 @@ public class generator {
 		hash_map = new HashMap<String, ArrayList<Integer>>();
 		hash_map_customer = new HashMap<String, ArrayList<Integer>>();
 		sc_uniques_final = new HashMap<String, ArrayList<String>>();
-
-		File file = new File("C:\\Users\\Ramzy\\Desktop\\datagenerator\\configurationfile.txt");
-		BufferedReader br = new BufferedReader(new FileReader(file));
 		out = new BufferedWriter (new FileWriter("C:/Users/Ramzy/Desktop/Resilience/october_out.ttl"));
-		//out2 = new BufferedWriter (new FileWriter("C:/Users/Ramzy/Desktop/datagenerator/temp_out.ttl"));
-	 OntModel model = ModelFactory.createOntologyModel();
-	 	
-	 model.read("C:/Users/Ramzy/Desktop/datagenerator/july_out.ttl");
-	 create_disruptions(model); 
-	 //get_disrupted_nodes(model); 
-	 //recovered_portfolio(model); 
-	    //recovery_evaluation(model); 
+		OntModel model = ModelFactory.createOntologyModel();
+		model.read("src/resources/output.ttl");
+		create_disruptions(model); 
 	    model.write(out, "TURTLE");
       out.close();
 	}
@@ -111,25 +95,10 @@ public class generator {
 			String order= orders.get(i).get("order").toString().split("#")[1];
 			String port= orders.get(i).get("portfolio").toString().split("#")[1];
 			
-		get_protfolio_quantity(model, order, port); 
-		get_protfolio_price( model, order, port);
-		//System.out.println(order+"  "+port);
-		get_latest_portfolio_time( model, order,port); 
+		get_plan_quantity(model, order, port); 
+		get_plan_price( model, order, port);
+		get_latest_plan_time( model, order,port); 
 		}
-		
-		if (strategy==0)
-		{
-			System.out.println("Strategic Stock"); 
-				}
-			 else if (strategy==1)
-				
-			 System.out.println("Alternative Mode");
-			
-		 else if (strategy==2)
-			 System.out.println("Late Recovery");
-		 else
-			 System.out.println("Late Recovery and Startegic Stock");
-		
 		String get_recovered_orders= Prefix+ "Select DISTINCT (SUM(?op) as ?originaltotalprice)  (SUM(?cost) as?costt) (SUM(?delay) as?delayy) where{  "
 				+ "?order :hasPortfolio ?portfolio. ?portfolio :hasTotalPrice ?price. ?order :hasDeliveryTime ?dt. "
 				+ " ?portfolio :hasLatestTime ?time. ?portfolio :hasTotalQuantity ?quantity. ?order :hasOriginalQuantity ?oq. ?order :hasTotalOriginalPrice ?op"
@@ -204,13 +173,13 @@ public class generator {
 		
 		////////////////////////////////////////////////////////////////////
 		 model = ModelFactory.createOntologyModel();
-		 model.read("C:/Users/Ramzy/Desktop/datagenerator/july_out.ttl");
-		 String s = Prefix+ "SELECT * where { << :PortfolioZOHNJjuf  :needsNode ?node>> :hasTimeStamp ?t.  ?node :hasLongitude ?long. ?node :hasLatitude ?lat.}"; 
+		 model.read("src/resources/output.ttl");
+		 String s = Prefix+ "SELECT * where { << :PortfolioOZzMZj7s  :needsNode ?node>> :hasTimeStamp ?t.  ?node :hasLongitude ?long. ?node :hasLatitude ?lat.}"; 
 		 List<QuerySolution> ll= execute(Prefix+s,model); 
 		 Individual disruption = model.createIndividual(NS+"Disruption"+7, disruption_class);
 		 int y= (int) (2.0 * Math.random());
-			String ca= cause.get(y); 
-			OntClass cause_class = model.getOntClass(NS+ca);
+		String ca= cause.get(y); 
+		OntClass cause_class = model.getOntClass(NS+ca);
 		 Individual cause_ind = model.createIndividual(NS+"Cause"+7,cause_class);
 		 cause_ind.addProperty(hasScope, scopes.get(0));
 		 disruption.addProperty(hasCause,cause_ind);
@@ -235,32 +204,19 @@ public class generator {
 		 String insert= Prefix+ "Insert { << <"+ll.get(i).get("node").toString()+"> :isDisruptedBy :Disruption7 >> :hasTimeStamp \""+ll.get(i).get("t").toString()+"\"} WHERE{ }\r\n" ; 
 		 UpdateAction.parseExecute(insert, model);
 		}
-		 String get_nodes=Prefix+ "Select * where { << ?node :isDisruptedBy :Disruption7 >> :hasTimeStamp ?t. <<?plan :needsNode ?node>> :hasTimeStamp ?t}"; 
-		// print_results(execute(get_nodes,model),1); 
 		 model.write(out, "TURTLE"); 
-		 System.out.println("/////////////////////////////////");
-		String get_disruption= Prefix+ "SELECT * where {<"+disruption+"> ?x ?y}" 		
-				;
-
-		 //print_results(execute(get_disruption,model),1); 
-		 get_disrupted_nodes(model); 
-		 System.out.println("Disruption7"); 
-		 recovered_portfolio(model); 
+		 get_disrupted_plans(model); 
+		 recover(model); 
 
 		//////////////////////////////////////////////////////////////////////
-		int t=0; 
 			 String get_portfolios = "Select * where {?order :hasQuantity ?q. ?order :hasDeliveryTime ?d.  ?order :hasPortfolio ?p. <<?p :needsNode ?node>> :hasTimeStamp ?t.  ?node :hasLongitude ?long. ?node :hasLatitude ?lat.}"; 
 			 List<QuerySolution> l= execute(Prefix+get_portfolios,model); 
 			
 		 for (int i=0; i<6; i++ )
 		 {
 			 model = ModelFactory.createOntologyModel();
-			 model.read("C:/Users/Ramzy/Desktop/datagenerator/july_out.ttl");
-			// Individual disruption = model.createIndividual( NS+"Disruption"+RandomStringUtils.randomAlphanumeric(8), disruption_class); 
+			 model.read("src/resources/output.ttl");
 			 Individual disruption1 = model.createIndividual( NS+"Disruption"+i, disruption_class); 
-			int j=t+1; 
-			// disruption.addProperty(scope, transports.get((int)(3.0 * Math.random())));
-			// disruption.addProperty(hasSeverity, getRandomValue(0.1, 0.9));
 			 disruption1.addProperty(hasSeverity, severity.get(0)+"");
 			int y1= (int) (2.0 * Math.random());
 			String ca1= cause.get(y1); 
@@ -280,97 +236,37 @@ public class generator {
 				 disruption1.addProperty(lat_max, (lati+10)+"");
 				 disruption1.addProperty(long_min, longi+"");
 				 disruption1.addProperty(long_max, (longi+10)+"");
-				 
-				 
 				 disruption1.addProperty(affectsNode, nodes.get(i));
-				 System.out.println("/////////////////////////////////");
-					String insert= Prefix+ "Insert { << :"+nodes.get(i)+" :isDisruptedBy <"+disruption1+">>> :hasTimeStamp \""+timestamps.get(i)+"\"} WHERE{ <"+disruption1+"> a :Disruption}\r\n" ; 
-					 UpdateAction.parseExecute(insert, model);
-
-				
-				 String get_disruption1= Prefix+ "SELECT * where {<"+disruption1+"> ?x ?y}"; 	
-				
-				// print_results(execute(get_disruption1,model),1); 
-				 get_disrupted_nodes(model); 
-				 System.out.println("Disruption"+i);
-				 
-				 if (i==3)
-					 System.out.println("Disruption"+i);
-				 
-				recovered_portfolio(model); 
+				 String insert= Prefix+ "Insert { << :"+nodes.get(i)+" :isDisruptedBy <"+disruption1+">>> :hasTimeStamp \""+timestamps.get(i)+"\"} WHERE{ <"+disruption1+"> a :Disruption}\r\n" ; 
+				 UpdateAction.parseExecute(insert, model);
+				 get_disrupted_plans(model); 
+				 recover(model); 
 		 }
 		}
 	
-	
-
-	private static String getRandomValue(double d, double e) {
-		double random = new Random().nextDouble();
-		double result = d + (random * (e - d));
-
-		return String.valueOf(result);
-		
-	}
-	private static void get_disrupted_nodes(OntModel model) {
+	private static void get_disrupted_plans(OntModel model) {
 		List<QuerySolution> nodes= null; 
-		// print_results(execute(Prefix+ "SELECT DISTINCT * where {?dis :hasEndTime ?end. FILTER (regex(str(?end),'80'))}",model), C_Tiers);
-		/*String get_nodes= Prefix+ "Select * where { "
-				+ "<<?plan :needsNode ?node>> :hasTimeStamp ?t. "
-				+ "?node :hasLongitude ?longit. ?node :hasLatitude ?lat. \r\n "+
-				" ?dis :hasLatMin ?latmin. " + " ?dis :hasLatMax ?latmax. \r\n "+ 
-				" ?dis :hasLongMin ?longmin. "+ " ?dis :hasLongMax ?longmax.\r\n "  +
-				" ?dis :hasStartTime ?start.  ?dis :hasEndTime ?end. \r\n"+
-		 		" Filter ((xsd:integer (?longit)>= xsd:integer(?longmin)) && (xsd:integer(?longit)< xsd:integer(?longmax)) \r\n"
-		 		+ " && (xsd:integer(?lat)>= xsd:integer(?latmin)) && (xsd:integer(?lat)< xsd:integer(?latmax)) "
-		 		+ "  && xsd:integer(?t) >= xsd:integer(?start)  " 
-		 		+" && xsd:integer(?t) < xsd:integer(?end) )}"; 
-		 */	
-		 /*String get_nodes=Prefix+ "Select * where {  ?dis :hasStartTime ?start.  ?dis :hasEndTime ?end. \r\n << ?plan :needsNode ?node >> :hasTimeStamp ?t."+
-		 		" FILTER(  xsd:integer(?t) >= xsd:integer(?start)  " 
-			 		+" && xsd:integer(?t) < xsd:integer(?end) )}"; */
-		 		String get_nodes=Prefix+ "Select * where {  ?dis :hasStartTime ?start.  ?dis :hasEndTime ?end. \r\n << ?plan :needsNode ?node >> :hasTimeStamp ?t. "
+ 		String get_nodes=Prefix+ "Select * where {  ?dis :hasStartTime ?start.  ?dis :hasEndTime ?end. \r\n << ?plan :needsNode ?node >> :hasTimeStamp ?t. "
 		 				+ "<<?node :isDisruptedBy ?dis>> :hasTimeStamp ?x. "
 				 		+ " FILTER(  xsd:integer(?t) >= xsd:integer(?start)  " 
 					 		+" && xsd:integer(?t) < xsd:integer(?end) )}"; 
-				 
 			nodes= execute (get_nodes,model); 
-			System.out.println("Dsirupted Nodes:"+ nodes.size()); 
 			for (int j=0; j<nodes.size(); j++)
 			{
 				String node= nodes.get(j).get("node").toString().split("#")[1]; 
 				String dis= nodes.get(j).get("dis").toString().split("#")[1]; 
-				//System.out.println(dis+"  "+node); 
 				String time=  nodes.get(j).get("t").toString(); 
-			 String port= nodes.get(j).get("plan").toString().split("#")[1]; 
-			 String query= Prefix+ "INSERT { :"+port+" :isDisrupted 'True'. << :"+port+" :needsNode :"+node+" >> :isDisrupted 'True'. << :"+port+" :needsNode :"+node+" >> :isDisruptedBy :"+dis+"} WHERE { }"; // :"+port+" a :Portfolio. "
-			UpdateAction.parseExecute(query, model) ;
-			 String insert= Prefix+ "Insert { << :"+node+" :isDisruptedBy :"+dis+" >> :hasTimeStamp \""+time+"\"} WHERE{ }\r\n" ; 
-			 UpdateAction.parseExecute(insert, model);
-			 /*String q= Prefix+ "SELECT  * WHERE { ?order :hasPortfolio :"+port+". "
-						+ " :"+port+" :isDisrupted ?x. << :"+port+" :needsNode ?node>> :isDisrupted ?x. << :"+port+" :needsNode ?node>> :hasTimeStamp ?t. << :"+port+" :needsNode ?node >> :isDisruptedBy ?disruption."  
-						+ "<< :"+port+" :needsNode ?node>> :getsProduct  ?p. << :"+port+" :needsNode ?node>> :hasQuantity  ?q. << :"+port+" :needsNode ?node>> :hasUnitPrice  ?price . << :"+port+" :needsNode ?node>> :isDisruptedBy ?disruption."
-						+ "  << ?node :isDisruptedBy ?disruption>> :hasTimeStamp ?t. "
-						+ "?disruption :hasSeverity ?s. ?disruption :hasCause ?cause. "
-						+ "?cause :hasScope ?scope. BIND (xsd:integer(?q)* xsd:float(?s) as ?current)"
-						+ "BIND (xsd:integer(?q)- xsd:float(?current) as ?torecover) }"; 
-			
-			 nodes= execute (q,model);
-			 int l=0;*/
+			    String port= nodes.get(j).get("plan").toString().split("#")[1]; 
+			    String query= Prefix+ "INSERT { :"+port+" :isDisrupted 'True'. << :"+port+" :needsNode :"+node+" >> :isDisrupted 'True'. << :"+port+" :needsNode :"+node+" >> :isDisruptedBy :"+dis+"} WHERE { }"; // :"+port+" a :Portfolio. "
+			    UpdateAction.parseExecute(query, model) ;
+			    String insert= Prefix+ "Insert { << :"+node+" :isDisruptedBy :"+dis+" >> :hasTimeStamp \""+time+"\"} WHERE{ }\r\n" ; 
+			    UpdateAction.parseExecute(insert, model);
 			}
-//			model.write(out, "Turtle"); 
-			 String trial=Prefix+ "Select * where { ?port :isDisrupted 'True'. << ?port :needsNode ?node >> :isDisrupted 'True'. << ?port :needsNode ?node >> :isDisruptedBy ?di}"; 
-			 
-				nodes= execute (trial,model); 
-				//print_results(nodes,1); 
-				int l=0; 
-				model.write(out, "Turtle"); 
-				
-				
-			
+			model.write(out, "Turtle"); 
 	}
 
 	private static void print_results(List<QuerySolution> l, int time ) {
 		// TODO Auto-generated method stub
-		ArrayList<Integer> ll; 
 		for (int i=0; i<l.size(); i++)
 		{	
 			Iterator <String> variables= l.get(i).varNames(); 
@@ -393,7 +289,7 @@ public class generator {
 		
 	}
 	
-private static void get_protfolio_price(OntModel model, String order, String port)
+private static void get_plan_price(OntModel model, String order, String port)
 	
 {	
 	String get_price= Prefix+ "SELECT * WHERE{  :"+order+" :hasPortfolio :"+port+". <<:"+port+" :needsNode ?node>> :hasQuantity ?q.  <<:"+port+" :needsNode ?node>> :hasUnitPrice ?p. BIND (?p*?q AS ?price)} "; 
@@ -412,7 +308,7 @@ private static void get_protfolio_price(OntModel model, String order, String por
 	UpdateAction.parseExecute(query, model) ;
 		
 	}
-private static void get_protfolio_quantity(OntModel model, String order, String port)
+private static void get_plan_quantity(OntModel model, String order, String port)
 
 {	
 	
@@ -429,7 +325,7 @@ private static void get_protfolio_quantity(OntModel model, String order, String 
 		
 	}
 	
-private static void get_latest_portfolio_time(OntModel model, String order, String port)
+private static void get_latest_plan_time(OntModel model, String order, String port)
 {
 	
 			String get_price= Prefix+ "SELECT * WHERE{ :"+order+" :hasPortfolio :"+port+".  <<:"+port+" :needsNode ?node>> :hasQuantity ?q."
@@ -437,9 +333,6 @@ private static void get_latest_portfolio_time(OntModel model, String order, Stri
 							+ " OPTIONAL { ?node :hasOEM ?oem. ?oem :hasLeadTime ?oemlt. BIND (xsd:integer(?oemlt) + xsd:integer(?final) as ?finall ).} } order by desc (?t)" ; 
 			// 
 	List<QuerySolution> times= execute(get_price,model);
-	if (order.contains("OrderyLVk2aj1")) 
-		{int k=0;} 
-
 	int  final_time= Integer.parseInt(times.get(0).get("final").toString().split("\\^")[0]); 
 	if (times.get(0).get("oemlt")!= null)
 	{
@@ -451,32 +344,16 @@ private static void get_latest_portfolio_time(OntModel model, String order, Stri
 	
 }
 
-
-	 	
-	
-	private static void evaluation(String order, OntModel model)
-	{
-		// need to check quantity, in some cases it is less
-		String get_prices= Prefix+ "Select * where{ :"+order+" :hasPortfolio ?portfolio. << ?portfolio :needsNode ?node>> ?x ?y}"; 
-		print_results (execute(get_prices,model),1); 
-	}
-	private static void recovered_portfolio (OntModel model) throws IOException
+private static void recover (OntModel model) throws IOException
 	{
 		OntModel copyOfOntModel  = ModelFactory.createOntologyModel(model.getSpecification()) ; 
 	    copyOfOntModel.add( model.getBaseModel() );
-	    System.out.println("Model Size"+ model.size() + " Copy Model Size:"+ copyOfOntModel.size());
-		OntClass portfolio_class = model.getOntClass( NS + "Portfolio");
-		String qq= Prefix+ "SELECT  count(?portfolio) ?customer WHERE { ?order :hasPortfolio ?portfolio. ?customer :makes ?order. ?customer :hasPriority ?priority."
-				+ " ?portfolio :isDisrupted ?x. } GROUP by(?customer)"; 
-List<QuerySolution> temp= execute (qq,model); 
-print_results(temp, 1); 
+	    OntClass portfolio_class = model.getOntClass( NS + "Portfolio");
 		String q= Prefix+ "SELECT  * WHERE { ?order :hasPortfolio ?portfolio. ?customer :makes ?order. ?customer :hasPriority ?priority."
 						+ " ?portfolio :isDisrupted ?x. } ORDER BY DESC (?priority)"; 
 		List<QuerySolution> portfolios= execute (q,model); 
 		String order;
 		System.out.println("Disrupted Portfolios"+ portfolios.size());
-
-
 		int new_portf=0; 
 		for (int strategy=0; strategy<3; strategy++)
 		{
@@ -491,15 +368,9 @@ print_results(temp, 1);
 						+ "  << ?node :isDisruptedBy ?disruption>> :hasTimeStamp ?t. ?disruption :hasSeverity ?s. ?disruption :hasCause ?cause. ?cause :hasScope ?scope. BIND (xsd:integer(?q)* xsd:float(?s) as ?current)"
 						+ "BIND (xsd:integer(?q)- xsd:float(?current) as ?torecover) } ORDER BY DESC (?priority)"; 
 			  
-			List<QuerySolution> nodess= execute (q,model); 
 			String portfolio= portfolios.get(i).get("?portfolio").toString().split("#")[1];
-			//Individual portfolio_ind = model.createIndividual( NS+"Portfolio"+RandomStringUtils.randomAlphanumeric(8), portfolio_class);
 			Individual portfolio_ind = model.createIndividual( NS+"Portfolio"+order+i+strategy, portfolio_class);
-			if (portfo.contains("PortfolioOrder3MLWFImy"))
-			{
-				int jj=0; 
-			}
-				count= count+1; new_portf++; 
+			count= count+1; new_portf++; 
 			Individual order_ind= model.getIndividual(portfolios.get(i).get("order").toString()); 
 			Property hasPortfolio = model.getProperty(NS+"hasPortfolio");
 			order_ind.addProperty(hasPortfolio,portfolio_ind);
@@ -511,40 +382,11 @@ print_results(temp, 1);
 					+ "BIND (xsd:integer(?q)- xsd:float(?current) as ?torecover) } ORDER BY DESC (?priority)"; 
 		  
 		List<QuerySolution> nodes= execute (q,model); 
-	
-	 if (nodes==null)
-	 {
-		 int kk=0; 
-	 }
+
 		for (int n=0;n<nodes.size(); n++)
 		{
-			String scope = nodes.get(n).get("scope").toString(); 
 		String node=nodes.get(n).get("node").toString();
-	/*	if (node.contains("OEM")) // or check if cause is internal or external 
-		{
-			if (scope.contains("Inventory"))
-			{
-				recovery.add(try_strategic_stock(nodes.get(n),model,node.split("#")[1],portfolio_ind.toString().split("#")[1], portfolio));
-			}
-			else if (scope.contains("Logistics"))
-			{
-				recovery.add(try_alternative_mode(nodes.get(n),model, node.split("#")[1],portfolio_ind.toString().split("#")[1], portfolio)); //try alternative transport mode
-			}
-			else if (scope.contains("Production"))
-			{
-				
-					if (strategy==0)
-				{
-						recovery.add(try_strategic_stock(nodes.get(n),model, node.split("#")[1],portfolio_ind.toString().split("#")[1], portfolio));
-						}
-				 else
-				 { 
-					 portfolio_ind = model.createIndividual( NS+"Portfolio"+RandomStringUtils.randomAlphanumeric(8), portfolio_class);
-					 recovery.add(try_later_recovery(nodes.get(n),model,node.split("#")[1],portfolio_ind.toString().split("#")[1], portfolio)); 
-				 }
-				
-			}
-		}*/
+
 		if (node.contains("OEM")) // or check if cause is internal or external 
 		{
 			if (strategy==0)
@@ -557,12 +399,6 @@ print_results(temp, 1);
 				
 			 else if (strategy==2)
 			recovery.add(try_later_recovery(nodes.get(n),model,node.split("#")[1],portfolio_ind.toString().split("#")[1], portfolio)); 
-			/* else if (strategy==3)
-			 {
-				try_later_recovery(nodes.get(n),model,node.split("#")[1],portfolio_ind.toString().split("#")[1], portfolio);
-			 try_strategic_stock(nodes.get(n),model, node.split("#")[1],portfolio_ind.toString().split("#")[1], portfolio);
-			 }*/
-				
 			
 		}
 		else   //if external
@@ -580,8 +416,7 @@ print_results(temp, 1);
 		model=copyOfOntModel; 
 		System.out.println("Model Size"+ model.size() + " Copy Model Size:"+ copyOfOntModel.size()); 
 		   	
-		}// end of staretgy
-	//	System.out.println("Validation"+ validation);
+		}
 		System.out.println("New created Portfolios"+ new_portf);
 	}
 	
@@ -722,10 +557,6 @@ print_results(temp, 1);
 		}
 		else
 		{
-			if (order.contains("OrderIDYVlhgK"))
-			{
-				System.out.print("hey");
-			}
 			neww= details.get("q").toString().split("\\^")[0];
 			node= l.get("node").toString().split("#")[1]; 
 			recovery= "AlternatvieSupplier"; 
@@ -735,14 +566,11 @@ print_results(temp, 1);
 			
 		}
 		String q= 	 Prefix+
-				/*"DELETE   \r\n" + 
-				"{ << :"+portfolio+" :needsNode :"+node+" >> :hasQuantity ?q  } \r\n" + */
 				"Insert {  << :"+portfolio+" :needsNode :"+node+" >> :hasQuantity \""+neww+"\"."
 				+"<< :"+portfolio+" :needsNode :"+node+">> :getsProduct ?p. "+
 				"<< :"+portfolio+" :needsNode :"+node+">> :hasUnitPrice \""+price+"\"."+
 				"<< :"+portfolio+" :needsNode :"+node+">> :hasTimeStamp ?t.   "+
 				"<< :"+portfolio+" :needsNode :"+node+">> :recoveredBy '"+recovery+"'}   "+ 
-						
 				"where \r\n" + 
 				"{ << :"+portfolio_old+" :needsNode :"+oldNode+" >> :hasQuantity ?q.  "
 				+"<< :"+portfolio_old+" :needsNode :"+oldNode+">> :getsProduct ?p. "+
@@ -791,14 +619,6 @@ print_results(temp, 1);
 		}
 		}
 		private static void allocate_supplier_product(String supplier, String y, String component, OntModel model, String allocation_t, int t) {
-			String test= Prefix+ "Select * "+ "where \r\n" + 
-					"{:"+supplier+" :hasCapacity ?cap.\r\n" + 
-					"?cap :hasProduct ?p.\r\n" + 
-					"?cap :hasQuantity ?quantity.\r\n" + 
-					"?cap :hasTimeStamp \""+allocation_t+"\"."
-					+ "}\r\n" ; 
-			//print_results(execute (test, model),1); 
-		 
 				String q= Prefix+"DELETE   \r\n" + 
 						"{?cap :hasQuantity ?quantity.\r\n }\r\n" + 
 						"Insert {?cap :hasQuantity \""+y+"\"}\r\n" + 
@@ -827,14 +647,6 @@ print_results(temp, 1);
 						"?cap :hasTimeStamp \""+i+"\"."
 						+ "}\r\n" ; 
 				UpdateAction.parseExecute(q, model) ;
-				String test= Prefix+ "Select * "+ "where \r\n" + 
-						"{:"+supplier+" :hasCapacity ?cap.\r\n" + 
-						"?cap :hasProduct ?p.\r\n" + 
-						"?cap :hasQuantity ?quantity.\r\n" + 
-						"?cap :hasTimeStamp \""+i+"\"."
-						+ "}\r\n" ; 
-				//print_results(execute (test, model),1); 
-			 
 			}
 		}
 		private static QuerySolution try_later_recovery(QuerySolution node_supply, OntModel model, String node, String portfolio, String portfolio_old) {
@@ -858,7 +670,6 @@ print_results(temp, 1);
 		if (oem_inventory.size()==0) // no inventory at that time in included in the model 
 		{break; }
 		float oem_quantity=  Float.parseFloat(oem_inventory.get(0).get("q").toString().split("\\^")[0]);
-		String  price= oem_inventory.get(0).get("price").toString();
 		if (oem_quantity>= quant) // can fulfill later
 		{
 			float neww= oem_quantity- quant; 
@@ -873,7 +684,6 @@ print_results(temp, 1);
 					"?inv :hasTimeStamp \""+t+"\". "
 					+ "?inv :hasQuantity ?q. }";  
 			UpdateAction.parseExecute(query, model) ;
-			//System.out.println("at time"+t+"OEM was: "+oem_quantity+"now at"+ (oem_quantity- quantity)+""); 
 			toUpdate=node_supply.get("q").toString();  
 			recovery= "LateRecovery"; 
 			System.out.println("found at time"+i+ "toupdate"+ toUpdate); 
@@ -925,19 +735,5 @@ print_results(temp, 1);
 		return l;
 		
 	}
-
-	private static List<QuerySolution> execute_query(String s, OntModel model) {
-	File path = new File(s);
-	Query query = QueryFactory.read(path.getAbsolutePath());
-	QueryExecution qe2 = QueryExecutionFactory.create(query, model);
-	ResultSet results = qe2.execSelect();
-	List<QuerySolution> l = new ArrayList<QuerySolution>();
-	while (results.hasNext())
-		l.add(results.next());
-	
-	return l; 
-		
-	}
-
 
 }
